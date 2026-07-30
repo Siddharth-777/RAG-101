@@ -10,27 +10,74 @@
 </head>
 <body>
 
-<div class="container">
+<div class="layout">
 
-    <header>
-        <div class="eyebrow">Local Retrieval Pipeline</div>
+    <aside class="sidebar">
+
+        <div class="mark"></div>
         <h1>RAG-101</h1>
-        <p>Upload a document, then ask questions grounded in its contents.</p>
-    </header>
+        <p class="tagline">Upload a document, then ask questions grounded in its contents. Nothing leaves your local instance.</p>
 
-    <div class="pipeline">
+        <nav class="stepper" id="stepper">
 
-        <section class="stage">
-            <div class="stage-index">01</div>
-            <div class="stage-connector"></div>
-
-            <h2>Upload document</h2>
-            <p class="stage-desc">PDF, DOCX, or TXT.</p>
-
-            <div class="file-row">
-                <label class="file-label" for="fileInput">Choose file</label>
-                <span class="file-name" id="fileName">No file selected</span>
+            <div class="step" id="step-1">
+                <div class="step-rail">
+                    <div class="step-dot"></div>
+                    <div class="step-line"></div>
+                </div>
+                <div>
+                    <div class="step-label">Stage 01</div>
+                    <div class="step-title">Upload</div>
+                    <div class="step-status" id="step-1-status">Awaiting file</div>
+                </div>
             </div>
+
+            <div class="step" id="step-2">
+                <div class="step-rail">
+                    <div class="step-dot"></div>
+                    <div class="step-line"></div>
+                </div>
+                <div>
+                    <div class="step-label">Stage 02</div>
+                    <div class="step-title">Ask</div>
+                    <div class="step-status" id="step-2-status">Waiting on stage 01</div>
+                </div>
+            </div>
+
+            <div class="step" id="step-3">
+                <div class="step-rail">
+                    <div class="step-dot"></div>
+                </div>
+                <div>
+                    <div class="step-label">Stage 03</div>
+                    <div class="step-title">Response</div>
+                    <div class="step-status" id="step-3-status">Waiting on stage 02</div>
+                </div>
+            </div>
+
+        </nav>
+
+        <div class="sidebar-foot">
+            <span class="dot"></span>127.0.0.1:8000
+        </div>
+
+    </aside>
+
+    <main class="workspace">
+
+        <section class="section">
+            <div class="section-eyebrow">Stage 01</div>
+            <h2>Upload document</h2>
+            <p class="section-desc">PDF, DOCX, or TXT. The file is chunked and indexed before you can ask questions.</p>
+
+            <label class="dropzone" for="fileInput" id="dropzone" tabindex="0">
+                <div class="dropzone-icon"></div>
+                <div class="dropzone-text">
+                    <div class="file-cta">Choose a file or drag it here</div>
+                    <div class="file-sub" id="fileSub">.pdf · .docx · .txt</div>
+                    <div class="file-name" id="fileName"></div>
+                </div>
+            </label>
 
             <input
                 type="file"
@@ -47,12 +94,10 @@
         </section>
 
 
-        <section class="stage">
-            <div class="stage-index">02</div>
-            <div class="stage-connector"></div>
-
+        <section class="section">
+            <div class="section-eyebrow">Stage 02</div>
             <h2>Ask a question</h2>
-            <p class="stage-desc">Answers are drawn only from the uploaded document.</p>
+            <p class="section-desc">Answers are generated only from the document you uploaded.</p>
 
             <textarea
                 id="question"
@@ -66,19 +111,23 @@
         </section>
 
 
-        <section class="stage">
-            <div class="stage-index">03</div>
-
+        <section class="section">
+            <div class="section-eyebrow">Stage 03</div>
             <h2>Response</h2>
-            <p class="stage-desc">Generated answer appears below.</p>
 
-            <div id="response" class="is-placeholder">
-                Waiting for a question.
+            <div class="console">
+                <div class="console-bar">
+                    <span>Output</span>
+                    <span id="consoleState">Idle</span>
+                </div>
+                <div id="response" class="is-placeholder">
+                    Waiting for a question.
+                </div>
             </div>
 
         </section>
 
-    </div>
+    </main>
 
 </div>
 
