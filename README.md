@@ -1,36 +1,68 @@
-# RAG-101 Backend Documentation
+# RAG-101
 
-## Overview
-
-RAG-101 is a FastAPI backend foundation for building a Retrieval-Augmented Generation (RAG) system.
-
-The current backend provides:
-
-* FastAPI application setup
-* API key authentication
-* Health check endpoint
-* Document upload endpoint
-* Supabase integration
-* Raw document storage using Supabase Storage
-* Document metadata storage using Supabase PostgreSQL
-* Request and response validation
-
-The backend will later be extended with:
-
-* Document parsing
-* Text cleaning
-* Document chunking
-* Embedding generation
-* FAISS vector database integration
-* Semantic search
-* Ollama LLM integration
+A simple Retrieval-Augmented Generation (RAG) system built using **FastAPI**, **FAISS**, **Sentence Transformers**, **Supabase**, and **Ollama**. The application allows users to upload documents, index them into a vector database, and ask questions based on the uploaded documents using a local Large Language Model (LLM).
 
 ---
 
-# Project Structure
+## Features
 
-```
+* Upload PDF documents
+* Store raw documents in Supabase Storage
+* Store document metadata in Supabase Database
+* Parse and clean document text
+* Create overlapping text chunks
+* Generate embeddings using Sentence Transformers
+* Store embeddings in FAISS
+* Perform semantic similarity search
+* Generate responses using Ollama
+* FastAPI backend with Swagger documentation
+* Minimal HTML, CSS and JavaScript frontend
+
+---
+
+## Tech Stack
+
+### Backend
+
+* Python
+* FastAPI
+* FAISS
+* Sentence Transformers
+* Ollama
+* Supabase
+* PyMuPDF
+* Pydantic
+
+### Frontend
+
+* HTML
+* CSS
+* JavaScript
+
+---
+
+## Project Structure
+
+```text
 RAG-101/
+
+├── frontend/
+│   ├── index.html
+│   ├── style.css
+│   └── script.js
+│
+├── rag/
+│   ├── parser.py
+│   ├── cleaner.py
+│   ├── chunker.py
+│   ├── embeddings.py
+│   ├── vector_store.py
+│   ├── retriever.py
+│   ├── prompt.py
+│   ├── llm.py
+│   ├── ingestion.py
+│   ├── schemas.py
+│   └── resources.py
 │
 ├── main.py
 ├── core.py
@@ -38,531 +70,212 @@ RAG-101/
 ├── supabase_client.py
 ├── requirements.txt
 ├── .env
-│
-└── Supabase
-    │
-    ├── Storage Bucket
-    │      └── raw_documents
-    │
-    └── Database Table
-           └── document_metadata
+└── README.md
 ```
 
 ---
 
-# Files Documentation
+## How It Works
+
+1. Upload a PDF document.
+2. Store the original file in Supabase Storage.
+3. Save document metadata in Supabase.
+4. Extract text from the document.
+5. Clean the extracted text.
+6. Split the text into overlapping chunks.
+7. Generate vector embeddings for each chunk.
+8. Store embeddings in a FAISS vector database.
+9. Convert the user's question into an embedding.
+10. Retrieve the most relevant chunks using semantic search.
+11. Create a prompt using the retrieved context and the user query.
+12. Send the prompt to Ollama.
+13. Return the generated answer.
 
 ---
 
-# 1. main.py
+## API Endpoints
 
-## Purpose
+### GET /
 
-`main.py` is the main entry point of the FastAPI backend.
-
-It handles:
-
-* Creating the FastAPI application
-* Loading environment variables
-* API key authentication
-* Defining API routes
-* Handling document uploads
-* Connecting API requests with backend logic
+Returns a simple message indicating that the backend is running.
 
 ---
 
-## FastAPI Application
+### GET /health
 
-The application is created using FastAPI.
-
-It provides:
-
-* REST API endpoints
-* Request handling
-* Swagger API documentation
-* Error handling
-
-Swagger documentation is available at:
-
-```
-/docs
-```
+Returns the current health status of the backend.
 
 ---
 
-# API Authentication
+### POST /upload
 
-RAG-101 uses API key-based authentication.
+Uploads a document to the system.
 
-The API key is stored inside `.env`.
+This endpoint:
 
-Example:
+* Uploads the file to Supabase Storage
+* Saves document metadata
+* Parses the document
+* Cleans the extracted text
+* Creates overlapping chunks
+* Generates embeddings
+* Stores vectors in FAISS
+
+---
+
+### POST /process
+
+Accepts a user query and returns an answer.
+
+This endpoint:
+
+* Converts the query into an embedding
+* Retrieves the Top-K most relevant chunks
+* Creates the prompt
+* Sends the prompt to Ollama
+* Returns the generated response
+
+---
+
+## Project Modules
+
+### main.py
+
+Main FastAPI application.
+
+Responsibilities:
+
+* API endpoints
+* Authentication
+* File uploads
+* Document ingestion
+* Processing user queries
+
+---
+
+### core.py
+
+Implements the RAG pipeline.
+
+Responsibilities:
+
+* Retrieve relevant chunks
+* Generate prompts
+* Query the LLM
+* Return the final response
+
+---
+
+### models.py
+
+Contains the request and response models used by FastAPI.
+
+---
+
+### supabase_client.py
+
+Initializes the Supabase client using credentials from the `.env` file.
+
+---
+
+### parser.py
+
+Extracts text from PDF documents while preserving page numbers.
+
+---
+
+### cleaner.py
+
+Removes unnecessary spaces and unwanted characters from extracted text.
+
+---
+
+### chunker.py
+
+Splits cleaned text into overlapping chunks and stores chunk metadata.
+
+---
+
+### embeddings.py
+
+Generates sentence embeddings using the **all-MiniLM-L6-v2** model.
+
+---
+
+### vector_store.py
+
+Handles FAISS operations.
+
+Functions include:
+
+* Add vectors
+* Search vectors
+* Save index
+* Load index
+
+---
+
+### retriever.py
+
+Performs semantic similarity search and returns the most relevant chunks.
+
+---
+
+### prompt.py
+
+Builds the prompt by combining the retrieved chunks with the user's query.
+
+---
+
+### llm.py
+
+Communicates with the locally running Ollama model and returns the generated response.
+
+---
+
+### ingestion.py
+
+Runs the complete indexing pipeline:
+
+* Parse
+* Clean
+* Chunk
+* Embed
+* Store in FAISS
+
+---
+
+### schemas.py
+
+Contains the Pydantic models used throughout the RAG pipeline.
+
+---
+
+### resources.py
+
+Initializes shared resources such as the embedding model and vector store.
+
+---
+
+## Environment Variables
+
+Create a `.env` file in the project root.
 
 ```env
-API_KEY=my_secret_key
-```
+API_KEY=rag101
 
-Protected endpoints require:
+SUPABASE_URL=your_supabase_url
 
-```
-X-API-Key: my_secret_key
-```
+SUPABASE_KEY=your_supabase_service_key
 
-Protected routes:
-
-| Endpoint   | Method |
-| ---------- | ------ |
-| `/upload`  | POST   |
-| `/process` | POST   |
-
----
-
-# Endpoints
-
-## GET /
-
-### Description
-
-Checks whether the backend is running.
-
-### Response
-
-```json
-{
-    "message": "RAG-101 Backend Running"
-}
+OLLAMA_MODEL=llama3:latest
 ```
 
 ---
 
-## GET /health
+## Installation
 
-### Description
-
-Health monitoring endpoint.
-
-Used for checking whether the API service is active.
-
-### Response
-
-```json
-{
-    "status": "OK"
-}
-```
-
----
-
-## POST /upload
-
-### Description
-
-Uploads raw documents to Supabase Storage.
-
-The uploaded documents are stored inside the `raw_documents` Supabase bucket.
-
-The endpoint performs:
-
-* Receiving the uploaded file
-* Reading file contents
-* Uploading the file to Supabase Storage
-* Storing document metadata in PostgreSQL
-
-### Request
-
-Type:
-
-```
-multipart/form-data
-```
-
-Required field:
-
-```
-file
-```
-
-Example:
-
-```
-document.pdf
-```
-
----
-
-### Response
-
-Example:
-
-```json
-{
-    "message": "File uploaded successfully",
-    "filename": "document.pdf",
-    "storage_path": "raw_documents/document.pdf",
-    "size": 12345
-}
-```
-
----
-
-## POST /process
-
-### Description
-
-Main processing endpoint.
-
-Currently, it calls the processing function from `core.py`.
-
-Future functionality:
-
-* Generate query embeddings
-* Search relevant documents
-* Retrieve context
-* Generate response using LLM
-
----
-
-### Request Body
-
-```json
-{
-    "text": "Explain Retrieval Augmented Generation"
-}
-```
-
----
-
-### Response
-
-```json
-{
-    "result": "Done"
-}
-```
-
----
-
-# 2. models.py
-
-## Purpose
-
-`models.py` contains Pydantic models used for request and response validation.
-
-It ensures that API inputs and outputs follow a fixed structure.
-
-Benefits:
-
-* Automatic validation
-* Type checking
-* Cleaner API handling
-* Swagger documentation support
-
----
-
-# ProcessRequest
-
-Used for receiving input data.
-
-Code:
-
-```python
-class ProcessRequest(BaseModel):
-    text: str
-```
-
-Expected request:
-
-```json
-{
-    "text": "Hello World"
-}
-```
-
----
-
-# ProcessResponse
-
-Used for sending API responses.
-
-Code:
-
-```python
-class ProcessResponse(BaseModel):
-    result: str
-```
-
-Response:
-
-```json
-{
-    "result": "Done"
-}
-```
-
----
-
-# 3. core.py
-
-## Purpose
-
-`core.py` contains the main business logic of the application.
-
-The API layer calls functions from this file instead of containing processing logic directly.
-
----
-
-## Current Implementation
-
-Currently:
-
-```python
-def process(data):
-
-    return "Done"
-```
-
-It acts as a placeholder for future RAG processing.
-
----
-
-## Future Responsibilities
-
-This file will later handle:
-
-* Query processing
-* Embedding generation
-* Vector database search
-* Context retrieval
-* LLM response generation
-
----
-
-# 4. supabase_client.py
-
-## Purpose
-
-`supabase_client.py` manages the connection between the FastAPI backend and Supabase.
-
-It creates a reusable Supabase client that can be used throughout the project.
-
----
-
-## Responsibilities
-
-* Load Supabase credentials
-* Create Supabase connection
-* Provide access to:
-
-  * Supabase Storage
-  * PostgreSQL database
-
----
-
-## Environment Variables Required
-
-The file requires:
-
-```env
-SUPABASE_URL=
-SUPABASE_KEY=
-```
-
-Example:
-
-```env
-SUPABASE_URL=https://project-id.supabase.co
-SUPABASE_KEY=service-role-key
-```
-
----
-
-## Usage
-
-The client is imported into backend files:
-
-```python
-from supabase_client import supabase
-```
-
-It is used for:
-
-* Uploading documents
-* Storing metadata
-* Accessing Supabase services
-
----
-
-# 5. Supabase Storage
-
-## Purpose
-
-Supabase Storage is used to store the original uploaded documents.
-
-Instead of saving files locally, documents are stored in the cloud.
-
----
-
-## Storage Bucket
-
-Bucket name:
-
-```
-raw_documents
-```
-
-Example stored files:
-
-```
-raw_documents/
-    research.pdf
-    report.docx
-    notes.txt
-```
-
----
-
-## Why Store Raw Documents?
-
-The original documents are required as the source for the RAG pipeline.
-
-They will later be used for:
-
-* Text extraction
-* Cleaning
-* Chunk generation
-* Embedding creation
-
----
-
-# 6. Supabase Database
-
-## Purpose
-
-The PostgreSQL database stores metadata about uploaded documents.
-
-Table name:
-
-```
-document_metadata
-```
-
----
-
-## Table Schema
-
-| Column       | Type      |
-| ------------ | --------- |
-| id           | uuid      |
-| filename     | text      |
-| file_type    | text      |
-| size         | bigint    |
-| storage_path | text      |
-| created_at   | timestamp |
-
----
-
-## Example Record
-
-```json
-{
-    "filename": "research.pdf",
-    "file_type": "application/pdf",
-    "size": 50000,
-    "storage_path": "raw_documents/research.pdf"
-}
-```
-
----
-
-# 7. requirements.txt
-
-## Purpose
-
-Contains all Python dependencies required to run the backend.
-
-Current dependencies:
-
-```
-fastapi
-uvicorn
-supabase
-python-dotenv
-```
-
----
-
-## Dependencies
-
-### FastAPI
-
-Used for:
-
-* Creating APIs
-* Handling requests
-* Managing routes
-
----
-
-### Uvicorn
-
-Used as the ASGI server to run FastAPI.
-
-Command:
-
-```
-uvicorn main:app --reload
-```
-
----
-
-### Supabase
-
-Python SDK used for:
-
-* Storage operations
-* Database operations
-
----
-
-### python-dotenv
-
-Used for loading environment variables from `.env`.
-
----
-
-# 8. .env
-
-## Purpose
-
-Stores sensitive configuration values.
-
-Example:
-
-```env
-API_KEY=my_secret_key
-
-SUPABASE_URL=https://project.supabase.co
-
-SUPABASE_KEY=my_service_key
-```
-
----
-
-## Security
-
-The `.env` file should never be committed to GitHub.
-
-Add it to:
-
-```
-.gitignore
-```
-
----
-
-# Running the Project
-
-## Install Dependencies
+Install the required dependencies.
 
 ```bash
 pip install -r requirements.txt
@@ -570,17 +283,15 @@ pip install -r requirements.txt
 
 ---
 
-## Start Backend Server
+## Running the Backend
+
+Start the FastAPI server.
 
 ```bash
 uvicorn main:app --reload
 ```
 
----
-
-## Access API
-
-Backend:
+The API will be available at:
 
 ```
 http://127.0.0.1:8000
@@ -594,37 +305,60 @@ http://127.0.0.1:8000/docs
 
 ---
 
-# Current Implementation Status
+## Running Ollama
 
-## Completed
+Start the Ollama server.
 
-* FastAPI backend setup
-* API key authentication
-* Root endpoint
-* Health endpoint
-* File upload API
-* Supabase connection
-* Raw document storage
-* Metadata storage
-* Request/response validation
+```bash
+ollama serve
+```
 
----
+Verify the installed model.
 
-## Pending
-
-* Document parsing
-* Text cleaning
-* Chunk creation
-* Metadata extraction
-* Embedding generation
-* FAISS vector database
-* Semantic search
-* Ollama LLM integration
+```bash
+ollama list
+```
 
 ---
 
-# Summary
+## Running the Frontend
 
-RAG-101 currently provides the backend foundation required for building a complete RAG application.
+Navigate to the frontend folder.
 
-The current system handles document ingestion and storage, while future modules will extend it into a complete retrieval and generation pipeline.
+```bash
+cd frontend
+```
+
+Start a simple web server.
+
+```bash
+python -m http.server 5500
+```
+
+Open the application in your browser.
+
+```
+http://localhost:5500
+```
+
+---
+
+## Future Improvements
+
+* Support DOCX and TXT files
+* Source citations with page references
+* Conversation history
+* Streaming responses
+* Hybrid search
+* User authentication
+* Cloud vector database support
+* Docker deployment
+* Production-ready logging and monitoring
+
+---
+
+## Author
+
+**Siddharth Srinivasan**
+
+**RAG-101** — A Basic Retrieval-Augmented Generation System built using FastAPI, FAISS, Supabase and Ollama.
