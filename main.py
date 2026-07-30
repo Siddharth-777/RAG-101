@@ -3,6 +3,8 @@ from fastapi.security import APIKeyHeader
 from pathlib import Path
 from dotenv import load_dotenv
 import os
+from supabase_client import supabase
+from datetime import datetime
 
 from models import ProcessRequest, ProcessResponse
 from core import process
@@ -64,25 +66,64 @@ def health():
 
 # FILE UPLOAD ENDPOINT
 @app.post("/upload")
-async def upload(file: UploadFile = File(...),api_key: str = Security(verify_api_key)):
+async def upload(
+    file: UploadFile = File(...),
+    api_key: str = Security(verify_api_key)
+):
+
     try:
+
+        # Read file content
         contents = await file.read()
 
-        file_path = UPLOAD_DIR / Path(file.filename).name
 
-        with open(file_path, "wb") as f:
-            f.write(contents)
+        # Create storage path
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+        storage_path = f"raw_documents/{timestamp}_{file.filename}"
+
+
+        # Upload file to Supabase Storage
+        storage_response = supabase.storage.from_(
+            "raw_documents"
+        ).upload(
+            path=storage_path,
+            file=contents,
+            file_options={
+                "content-type": file.content_type
+            }
+        )
+
+
+        # Store metadata in database
+        metadata = {
+            "filename": file.filename,
+            "file_type": file.content_type,
+            "size": len(contents),
+            "storage_path": storage_path
+        }
+
+
+        db_response = supabase.table(
+            "document_metadata"
+        ).insert(
+            metadata
+        ).execute()
+
 
         return {
+            "message": "File uploaded successfully",
             "filename": file.filename,
-            "content_type": file.content_type,
+            "storage_path": storage_path,
             "size": len(contents)
         }
 
-    except Exception:
+
+    except Exception as e:
+
         raise HTTPException(
             status_code=500,
-            detail="Internal Server Error"
+            detail=str(e)
         )
 
 
