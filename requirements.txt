@@ -27,3 +27,6 @@ uvicorn==0.52.0
 pymupdf
 python-docx
 supabase
+sentence-transformers
+faiss-cpu
+numpy
