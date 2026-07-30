@@ -58,3 +58,5 @@ nunit-*.xml
 
 venv
 __pycache__
+sample.pdf
+tester.py
