@@ -5,9 +5,11 @@ from dotenv import load_dotenv
 import os
 from supabase_client import supabase
 from datetime import datetime
+from fastapi.middleware.cors import CORSMiddleware
 
 from models import ProcessRequest, ProcessResponse
 from core import process
+from rag.ingestion import ingest_document
 
 # LOAD ENVIRONMENT VARIABLES
 load_dotenv()
@@ -30,6 +32,20 @@ app = FastAPI(
     description="Template for Backend Deployment",
     version="1.0.0",
     docs_url="/docs",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://127.0.0.1:5500",
+        "http://localhost:5500",
+        "http://127.0.0.1:8001",
+        "http://localhost:8001",
+        "null"      # allows opening index.html directly
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # CREATE UPLOAD DIRECTORY
@@ -74,49 +90,119 @@ async def upload(
     try:
 
         # Read file content
+
         contents = await file.read()
 
 
+
         # Create storage path
+
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-        storage_path = f"raw_documents/{timestamp}_{file.filename}"
-
-
-        # Upload file to Supabase Storage
-        storage_response = supabase.storage.from_(
-            "raw_documents"
-        ).upload(
-            path=storage_path,
-            file=contents,
-            file_options={
-                "content-type": file.content_type
-            }
+        storage_path = (
+            f"raw_documents/{timestamp}_{file.filename}"
         )
 
 
+
+        # Upload file to Supabase Storage
+
+        storage_response = (
+            supabase.storage
+            .from_("raw_documents")
+            .upload(
+                path=storage_path,
+                file=contents,
+                file_options={
+                    "content-type": file.content_type
+                }
+            )
+        )
+
+
+
         # Store metadata in database
+
         metadata = {
+
             "filename": file.filename,
+
             "file_type": file.content_type,
+
             "size": len(contents),
+
             "storage_path": storage_path
+
         }
 
 
-        db_response = supabase.table(
-            "document_metadata"
-        ).insert(
-            metadata
-        ).execute()
+
+        db_response = (
+            supabase
+            .table("document_metadata")
+            .insert(metadata)
+            .execute()
+        )
+
+
+
+        # -----------------------------
+        # TEMPORARY LOCAL FILE
+        # FOR RAG INGESTION
+        # -----------------------------
+
+
+        temp_dir = Path(
+            "temp_documents"
+        )
+
+
+        temp_dir.mkdir(
+            exist_ok=True
+        )
+
+
+        temp_file_path = (
+            temp_dir / file.filename
+        )
+
+
+        with open(
+            temp_file_path,
+            "wb"
+        ) as f:
+
+            f.write(contents)
+
+
+
+        # -----------------------------
+        # RUN RAG INGESTION PIPELINE
+        # -----------------------------
+
+
+        ingest_document(
+            str(temp_file_path)
+        )
+
 
 
         return {
-            "message": "File uploaded successfully",
-            "filename": file.filename,
-            "storage_path": storage_path,
-            "size": len(contents)
+
+            "message":
+                "File uploaded and indexed successfully",
+
+            "filename":
+                file.filename,
+
+            "storage_path":
+                storage_path,
+
+            "size":
+                len(contents)
+
         }
+
 
 
     except Exception as e:
@@ -126,17 +212,15 @@ async def upload(
             detail=str(e)
         )
 
-
 # MAIN APPLICATION ENDPOINT
-@app.post("/process", response_model=ProcessResponse)
-def process_endpoint(data: ProcessRequest,api_key: str = Security(verify_api_key)):
-    try:
-        result = process(data)
+@app.post("/process",response_model=ProcessResponse)
+def process_endpoint(
+    data: ProcessRequest,
+    api_key: str = Security(verify_api_key)
+):
 
-        return ProcessResponse(result=result)
+    result = process(data)
 
-    except Exception:
-        raise HTTPException(
-            status_code=500,
-            detail="Internal Server Error"
-        )
+    return ProcessResponse(
+        result=result
+    )

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG-101</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <header>
+        <h1>RAG-101</h1>
+        <p>Document Retrieval-Augmented Generation</p>
+    </header>
+
+    <section class="card">
+
+        <h2>Upload Document</h2>
+
+        <input
+            type="file"
+            id="fileInput"
+            accept=".pdf,.docx,.txt"
+        >
+
+        <button id="uploadBtn">
+            Upload
+        </button>
+
+        <div id="uploadStatus"></div>
+
+    </section>
+
+
+    <section class="card">
+
+        <h2>Ask Question</h2>
+
+        <textarea
+            id="question"
+            placeholder="Ask anything about the uploaded document..."
+        ></textarea>
+
+        <button id="askBtn">
+            Ask
+        </button>
+
+    </section>
+
+
+    <section class="card">
+
+        <h2>Response</h2>
+
+        <div id="response">
+
+            Waiting for query...
+
+        </div>
+
+    </section>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>

@@ -1,5 +1,6 @@
 import faiss
 import numpy as np
+import os
 import pickle
 
 
@@ -48,12 +49,7 @@ class VectorStore:
 
 
 
-    def search(
-        self,
-        query_embedding,
-        top_k=5
-    ):
-
+    def search(self,query_embedding,top_k=5):
 
         query_embedding = np.array(
             [query_embedding]
@@ -70,6 +66,11 @@ class VectorStore:
 
 
         for index in indices[0]:
+
+            # FAISS returns -1 if no match exists
+            if index == -1:
+                continue
+
 
             if index < len(self.metadata):
 
@@ -111,17 +112,41 @@ class VectorStore:
         path="faiss_index"
     ):
 
+        index_file = f"{path}.index"
+        metadata_file = f"{path}.pkl"
+
+
+        if not (
+            os.path.exists(index_file)
+            and os.path.exists(metadata_file)
+        ):
+
+            print(
+                "FAISS index not found. Create embeddings first."
+            )
+
+            return False
+
+
 
         self.index = faiss.read_index(
-            f"{path}.index"
+            index_file
         )
 
 
         with open(
-            f"{path}.pkl",
+            metadata_file,
             "rb"
         ) as file:
 
             self.metadata = pickle.load(
                 file
             )
+
+
+        print(
+            "FAISS index loaded successfully."
+        )
+
+
+        return True

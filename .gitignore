@@ -60,3 +60,6 @@ venv
 __pycache__
 sample.pdf
 tester.py
+faiss_index.pkl
+faiss_index.index
+temp_documents
