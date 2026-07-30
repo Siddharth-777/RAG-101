@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RAG-101</title>
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,56 +13,72 @@
 <div class="container">
 
     <header>
+        <div class="eyebrow">Local Retrieval Pipeline</div>
         <h1>RAG-101</h1>
-        <p>Document Retrieval-Augmented Generation</p>
+        <p>Upload a document, then ask questions grounded in its contents.</p>
     </header>
 
-    <section class="card">
+    <div class="pipeline">
 
-        <h2>Upload Document</h2>
+        <section class="stage">
+            <div class="stage-index">01</div>
+            <div class="stage-connector"></div>
 
-        <input
-            type="file"
-            id="fileInput"
-            accept=".pdf,.docx,.txt"
-        >
+            <h2>Upload document</h2>
+            <p class="stage-desc">PDF, DOCX, or TXT.</p>
 
-        <button id="uploadBtn">
-            Upload
-        </button>
+            <div class="file-row">
+                <label class="file-label" for="fileInput">Choose file</label>
+                <span class="file-name" id="fileName">No file selected</span>
+            </div>
 
-        <div id="uploadStatus"></div>
+            <input
+                type="file"
+                id="fileInput"
+                accept=".pdf,.docx,.txt"
+            >
 
-    </section>
+            <button id="uploadBtn">
+                Upload
+            </button>
 
+            <div id="uploadStatus"></div>
 
-    <section class="card">
-
-        <h2>Ask Question</h2>
-
-        <textarea
-            id="question"
-            placeholder="Ask anything about the uploaded document..."
-        ></textarea>
-
-        <button id="askBtn">
-            Ask
-        </button>
-
-    </section>
+        </section>
 
 
-    <section class="card">
+        <section class="stage">
+            <div class="stage-index">02</div>
+            <div class="stage-connector"></div>
 
-        <h2>Response</h2>
+            <h2>Ask a question</h2>
+            <p class="stage-desc">Answers are drawn only from the uploaded document.</p>
 
-        <div id="response">
+            <textarea
+                id="question"
+                placeholder="e.g. What are the key findings in section 3?"
+            ></textarea>
 
-            Waiting for query...
+            <button id="askBtn">
+                Ask
+            </button>
 
-        </div>
+        </section>
 
-    </section>
+
+        <section class="stage">
+            <div class="stage-index">03</div>
+
+            <h2>Response</h2>
+            <p class="stage-desc">Generated answer appears below.</p>
+
+            <div id="response" class="is-placeholder">
+                Waiting for a question.
+            </div>
+
+        </section>
+
+    </div>
 
 </div>
 

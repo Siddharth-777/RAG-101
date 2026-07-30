@@ -2,17 +2,23 @@ const API = "http://127.0.0.1:8000";
 
 const API_KEY = "rag101";
 
-
-
+const fileInput = document.getElementById("fileInput");
+const fileName = document.getElementById("fileName");
 const uploadBtn = document.getElementById("uploadBtn");
-
+const uploadStatus = document.getElementById("uploadStatus");
 const askBtn = document.getElementById("askBtn");
+const responseEl = document.getElementById("response");
 
-
+fileInput.addEventListener("change", () => {
+    const file = fileInput.files[0];
+    fileName.innerText = file ? file.name : "No file selected";
+    uploadStatus.innerText = "";
+    uploadStatus.classList.remove("is-ready");
+});
 
 uploadBtn.onclick = async () => {
 
-    const file = document.getElementById("fileInput").files[0];
+    const file = fileInput.files[0];
 
     if(!file){
 
@@ -28,8 +34,9 @@ uploadBtn.onclick = async () => {
         file
     );
 
-    document.getElementById("uploadStatus").innerText =
-        "Uploading document...";
+    uploadBtn.disabled = true;
+    uploadStatus.classList.remove("is-ready");
+    uploadStatus.innerText = "Uploading document...";
 
     try{
 
@@ -55,15 +62,21 @@ uploadBtn.onclick = async () => {
 
         const data = await response.json();
 
-        document.getElementById("uploadStatus").innerText =
-            data.message;
+        uploadStatus.innerText = data.message;
+        uploadStatus.classList.add("is-ready");
 
     }
 
     catch(err){
 
-        document.getElementById("uploadStatus").innerText =
-            "Upload failed.";
+        uploadStatus.innerText = "Upload failed.";
+
+    }
+
+    finally{
+
+        uploadBtn.disabled = false;
+
     }
 
 };
@@ -82,8 +95,9 @@ askBtn.onclick = async () => {
         return;
     }
 
-    document.getElementById("response").innerText =
-        "Generating answer...";
+    askBtn.disabled = true;
+    responseEl.classList.remove("is-placeholder");
+    responseEl.innerText = "Generating answer...";
 
     try{
 
@@ -115,15 +129,20 @@ askBtn.onclick = async () => {
 
         const data = await response.json();
 
-        document.getElementById("response").innerText =
-            data.result;
+        responseEl.innerText = data.result;
 
     }
 
     catch(err){
 
-        document.getElementById("response").innerText =
-            "Unable to generate response.";
+        responseEl.innerText = "Unable to generate response.";
+
+    }
+
+    finally{
+
+        askBtn.disabled = false;
+
     }
 
 };
